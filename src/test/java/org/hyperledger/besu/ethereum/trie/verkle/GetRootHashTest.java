@@ -16,6 +16,7 @@
 package org.hyperledger.besu.ethereum.trie.verkle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.hyperledger.besu.ethereum.trie.verkle.factory.StoredNodeFactory;
 
@@ -53,11 +54,13 @@ public class GetRootHashTest {
         Bytes32.fromHexString("0x0100000000000000000000000000000000000000000000000000000000000000");
     trie.put(key1, value1);
     trie.put(key2, value2);
+    Bytes32 originalCommitment = trie.getRoot().getCommitment().orElseThrow();
     trie.getRootHash();
     Bytes32 commitmentAfterFirstCall = trie.getRoot().getCommitment().orElseThrow();
     trie.getRootHash();
     Bytes32 commitmentAfterSecondCall = trie.getRoot().getCommitment().orElseThrow();
 
+    assertNotEquals(originalCommitment, commitmentAfterFirstCall);
     assertEquals(commitmentAfterFirstCall, commitmentAfterSecondCall);
   }
 
@@ -74,15 +77,14 @@ public class GetRootHashTest {
         Bytes32.fromHexString("0x0100000000000000000000000000000000000000000000000000000000000000");
     trie.put(key1, value1);
     trie.put(key2, value2);
-    System.out.println("RootHash first call: " + trie.getRootHash());
-    Bytes32 commitmentAfterFirstCall = trie.getRoot().getCommitment().orElseThrow();
-    System.out.println(
-        "Root commitment after first call: " + trie.getRoot().getCommitment().orElseThrow());
-    System.out.println("RootHash second call: " + trie.getRootHash());
-    Bytes32 commitmentAfterSecondCall = trie.getRoot().getCommitment().orElseThrow();
-    System.out.println(
-        "Roots commitment after second call: " + trie.getRoot().getCommitment().orElseThrow());
 
+    Bytes32 originalCommitment = trie.getRoot().getCommitment().orElseThrow();
+    trie.getRootHash();
+    Bytes32 commitmentAfterFirstCall = trie.getRoot().getCommitment().orElseThrow();
+    trie.getRootHash();
+    Bytes32 commitmentAfterSecondCall = trie.getRoot().getCommitment().orElseThrow();
+
+    assertNotEquals(originalCommitment, commitmentAfterFirstCall);
     assertEquals(commitmentAfterFirstCall, commitmentAfterSecondCall);
   }
 
@@ -98,13 +100,44 @@ public class GetRootHashTest {
     Bytes32 value =
         Bytes32.fromHexString("0x1000000000000000000000000000000000000000000000000000000000000000");
     trie.put(key, value);
-    trie.commit(nodeUpdater);
 
+    Bytes32 originalCommitment = trie.getRoot().getCommitment().orElseThrow();
+    trie.commit(nodeUpdater);
+    Bytes32 commitmentAfterFirstCall = trie.getRoot().getCommitment().orElseThrow();
+    trie.getRootHash();
+    Bytes32 commitmentAfterSecondCall = trie.getRoot().getCommitment().orElseThrow();
+
+    assertNotEquals(originalCommitment, commitmentAfterFirstCall);
+    assertEquals(commitmentAfterFirstCall, commitmentAfterSecondCall);
+  }
+
+  @Test
+  public void testThreeValues() {
+    SimpleVerkleTrie<Bytes32, Bytes32> trie = new SimpleVerkleTrie<Bytes32, Bytes32>();
+    Bytes32 key =
+        Bytes32.fromHexString("0x4020000000000000000000000000000000000000000000000000000000000000");
+    Bytes32 value =
+        Bytes32.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000");
+    trie.put(key, value);
+    Bytes32 key2 =
+        Bytes32.fromHexString("0x4000000000000000000000000000000000000000000000000000000000000000");
+    Bytes32 value2 =
+        Bytes32.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000");
+    Bytes32 key3 =
+        Bytes32.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000");
+    Bytes32 value3 =
+        Bytes32.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000");
+    trie.put(key, value);
+    trie.put(key2, value2);
+    trie.put(key3, value3);
+
+    Bytes32 originalCommitment = trie.getRoot().getCommitment().orElseThrow();
     trie.getRootHash();
     Bytes32 commitmentAfterFirstCall = trie.getRoot().getCommitment().orElseThrow();
     trie.getRootHash();
     Bytes32 commitmentAfterSecondCall = trie.getRoot().getCommitment().orElseThrow();
 
+    assertNotEquals(originalCommitment, commitmentAfterFirstCall);
     assertEquals(commitmentAfterFirstCall, commitmentAfterSecondCall);
   }
 }
